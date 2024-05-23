@@ -8,36 +8,56 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "ehci_pci" "ahci" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
+  boot.supportedFilesystems = [ "ntfs" ];
+ 
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/eb692c9b-ea4f-470f-a131-2737680f0f2b";
+    { device = "/dev/disk/by-uuid/43f4dd7f-cf4c-4346-a019-d3948c594a0e";
       fsType = "btrfs";
       options = [ "subvol=@" ];
     };
 
-  boot.initrd.luks.devices."luks-0db57b78-32f6-4c21-8523-2feed52ddfdb".device = "/dev/disk/by-uuid/0db57b78-32f6-4c21-8523-2feed52ddfdb";
-
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/D553-58A0";
+    { device = "/dev/disk/by-uuid/6341-F1D3";
       fsType = "vfat";
     };
 
-  swapDevices =
-    [ { device = "/dev/disk/by-uuid/aa8263ec-0147-487c-aea1-85a8ceb3639f"; }
-    ];
+  fileSystems."/home" =
+    { device = "/dev/disk/by-uuid/9b76cc91-6bae-4b87-81ac-ba31f387686b";
+      fsType = "btrfs";
+    };
+
+  fileSystems."/run/media/kaue/Windows" = {
+    device = "/dev/disk/by-uuid/B0FB839B4374FD86";
+    fsType = "ntfs-3g";
+    options = [ "noauto" "x-systemd.automount" "x-systemd.device-timeout=175" "timeo=15" "x-systemd.idle-timeout=1min" "user" ];
+  }; 
+
+  fileSystems."/run/media/kaue/Kaue\ Backup" = {
+    device = "/dev/disk/by-uuid/B8A08B16A08ADA70";
+    fsType = "ntfs-3g";
+    options = [ "noauto" "x-systemd.automount" "x-systemd.device-timeout=175" "timeo=15" "x-systemd.idle-timeout=1min" "user" ];
+  };
+ 
+  #fileSystems."/run/media/kaue/ZedgeServer" = {
+  # device = "//192.168.15.26/dados/";
+  # fsType = "cifs";
+  # options = [ "x-systemd.automount" "noauto" "x-systemd.after=network-online.target" "x-systemd.mount-timeout=90" ];
+  #};
+
+  swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.enp0s25.useDHCP = lib.mkDefault true;
-  # networking.interfaces.wlo1.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp5s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
